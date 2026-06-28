@@ -66,15 +66,6 @@
             backdrop-filter: blur(15px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
-
-        /* 圖片放大檢視效果 */
-        .zoom-img {
-            transition: transform 0.5s ease;
-            cursor: zoom-in;
-        }
-        .zoom-img:hover {
-            transform: scale(1.02);
-        }
         
         /* 螢光筆畫重點 */
         .highlight-green {
@@ -89,9 +80,122 @@
             background: linear-gradient(180deg, transparent 60%, rgba(168, 85, 247, 0.6) 40%);
             font-weight: 900;
         }
+
+        /* ======= 翻轉式卡片 (3D Flip Card) 核心修正 ======= */
+        .flip-card {
+            background-color: transparent;
+            width: 100%;
+            height: 100px; /* 固定 height 避免排版跳動 (Layout Shift) */
+            perspective: 1000px;
+            margin-top: 1rem;
+            cursor: pointer;
+            display: block;
+            box-sizing: border-box;
+            /* 建立獨立渲染層，防止 hover 時影響外部 document flow */
+            transform: translateZ(0); 
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d; /* 維持 3D 空間 */
+            transform-origin: center center;
+        }
+
+        .flip-card:hover .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute; /* 強制絕對定位 */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0; /* 清除任何可能造成跳動的 margin */
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            font-weight: bold;
+            box-sizing: border-box;
+            /* 強制硬體加速，防止與 filter 衝突造成的跳動 */
+            -webkit-transform: translateZ(0);
+            transform: translateZ(0);
+        }
+
+        .flip-card-back {
+            /* 加上微小 translateZ 避免 Z-fighting 破圖 */
+            transform: rotateY(180deg) translateZ(1px);
+        }
+
+        /* ======= 修正翻轉時圖片與文字的鏡像/方向錯誤 ======= */
+        .flip-card-back > div {
+            /* 強制建立 3D 層，修正因濾鏡引發的文字方向鏡像錯誤 */
+            transform: translateZ(1px);
+        }
+
+        .flip-card-back img {
+            /* 針對圖片強制反轉，修正背面觀看時的鏡像問題 */
+            transform: rotateY(180deg);
+            display: block;
+        }
+
+        /* ======= 液態玻璃 (Liquid Glass) 特效 ======= */
+        .liquid-glass {
+            position: relative;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            border-left: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 1rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            z-index: 1;
+            box-sizing: border-box;
+        }
+
+        .liquid-glass::before {
+            content: '';
+            position: absolute;
+            /* 避免偽元素溢出引發 hover box 改變，造成 layout shift */
+            top: -10px; left: -10px; right: -10px; bottom: -10px;
+            background: inherit;
+            filter: url('#liquid-glass-filter');
+            z-index: -1;
+            opacity: 0.8;
+            pointer-events: none;
+            transform: translateZ(-1px); /* 推到後方避免干擾內容點擊與 3D 渲染 */
+        }
+
+        .liquid-glass::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 50%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 100%);
+            z-index: -1;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body class="antialiased selection:bg-emerald-500 selection:text-white">
+
+    <!-- 液態玻璃扭曲濾鏡定義 -->
+    <svg style="width:0;height:0;position:absolute;" aria-hidden="true" focusable="false">
+        <defs>
+            <filter id="liquid-glass-filter">
+                <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" result="noise" />
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="8" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+        </defs>
+    </svg>
 
     <!-- 液態背景 -->
     <div class="liquid-blob blob-1"></div>
@@ -137,15 +241,13 @@
                 <h2 class="text-3xl md:text-4xl font-black text-white">動物界的分類</h2>
             </div>
 
-            <!-- 動態講義圖片框 (使用你上傳的 170.png) -->
+            <!-- 動態講義圖片框 -->
             <div class="glass-card rounded-[2rem] p-4 sm:p-8 mb-8">
-                <div class="flex justify-between items-center mb-4">
+                <div class="mb-4">
                     <h3 class="text-xl font-black text-emerald-400">📌 動物界重點整理圖表</h3>
-                    <a href="170.png" target="_blank" class="text-xs bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-full transition shadow-lg">🔍 點擊放大</a>
                 </div>
                 <div class="w-full rounded-2xl overflow-hidden border border-slate-600 bg-white">
-                    <!-- 若找不到檔案，顯示預設圖片避免破圖 -->
-                    <img src="170.png" alt="動物界重點整理" class="w-full h-auto object-contain zoom-img" onerror="this.src='https://images.unsplash.com/photo-1546026423-cc4642628d2b?auto=format&fit=crop&w=1200&q=80'">
+                    <img src="170.png" alt="動物界重點整理" class="w-full h-auto object-contain" onerror="this.src='https://images.unsplash.com/photo-1546026423-cc4642628d2b?auto=format&fit=crop&w=1200&q=80'">
                 </div>
             </div>
 
@@ -161,7 +263,19 @@
                         <li>• <span class="highlight-green text-white">節肢動物：</span>昆蟲、蝦蟹 (種類最多，具外骨骼需蛻皮)</li>
                         <li>• <span class="highlight-green text-white">棘皮動物：</span>海星、海膽 (全產於海洋，具管足)</li>
                     </ul>
+                    
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front liquid-glass">
+                                <div><span class="text-yellow-400">Q:</span> 種類最多的動物門？</div>
+                            </div>
+                            <div class="flip-card-back liquid-glass">
+                                <div><span class="text-emerald-400">A:</span> 節肢動物門</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+                
                 <div class="glass-card rounded-3xl p-6 md:p-8">
                     <div class="text-4xl mb-4">🦴</div>
                     <h3 class="text-2xl font-black text-white mb-4">脊索動物門</h3>
@@ -172,6 +286,17 @@
                         <li>• <span class="highlight-green text-white">鳥類：</span>前肢特化為翅膀，恆溫動物。</li>
                         <li>• <span class="highlight-green text-white">哺乳類：</span>貓狗、人類、鴨嘴獸。具乳腺與毛髮，恆溫動物。</li>
                     </ul>
+
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front liquid-glass">
+                                <div><span class="text-yellow-400">Q:</span> 兩生類成體用何者呼吸？</div>
+                            </div>
+                            <div class="flip-card-back liquid-glass">
+                                <div><span class="text-emerald-400">A:</span> 肺與皮膚</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -187,12 +312,11 @@
 
             <!-- 課本講義圖 166.jpg -->
             <div class="glass-card rounded-[2rem] p-4 sm:p-8 mb-8">
-                <div class="flex justify-between items-center mb-4">
+                <div class="mb-4">
                     <h3 class="text-xl font-black text-blue-400">📌 CH4 重點整理講義</h3>
-                    <a href="166.jpg" target="_blank" class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-full transition shadow-lg">🔍 點擊放大</a>
                 </div>
                 <div class="w-full rounded-2xl overflow-hidden border border-slate-600 bg-white">
-                    <img src="166.jpg" alt="生態系重點整理" class="w-full h-auto object-contain zoom-img" onerror="this.src='https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=1200&q=80'">
+                    <img src="166.jpg" alt="生態系重點整理" class="w-full h-auto object-contain" onerror="this.src='https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=1200&q=80'">
                 </div>
             </div>
 
@@ -206,6 +330,17 @@
                         <span class="highlight-blue text-white">群集</span>：同地區所有族群。<br>
                         <span class="highlight-blue text-white">負荷量</span>：環境能供養的最大數量。
                     </p>
+
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front liquid-glass">
+                                <div class="text-sm"><span class="text-yellow-400">Q:</span> 同地區所有族群合稱？</div>
+                            </div>
+                            <div class="flip-card-back liquid-glass">
+                                <div class="text-sm"><span class="text-blue-400">A:</span> 群集</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <!-- 4-2 -->
                 <div class="glass-card rounded-3xl p-6">
@@ -216,6 +351,17 @@
                         • <span class="highlight-blue text-white">寄生/掠食：</span>一方得利一方受害。<br>
                         • <span class="highlight-blue text-white">互利共生：</span>雙方皆得利。
                     </p>
+
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front liquid-glass">
+                                <div class="text-sm"><span class="text-yellow-400">Q:</span> 蜜蜂採蜜屬於何種關係？</div>
+                            </div>
+                            <div class="flip-card-back liquid-glass">
+                                <div class="text-sm"><span class="text-blue-400">A:</span> 互利共生</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <!-- 4-3 -->
                 <div class="glass-card rounded-3xl p-6">
@@ -224,6 +370,17 @@
                     <p class="text-slate-400 text-sm font-bold leading-relaxed">
                         生產者 → 消費者。能量傳遞過程中會以熱能散失，約只有 <span class="highlight-blue text-white">10%</span> 的能量能傳遞到下一階層。
                     </p>
+
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front liquid-glass">
+                                <div class="text-sm"><span class="text-yellow-400">Q:</span> 能量傳遞的比例約為？</div>
+                            </div>
+                            <div class="flip-card-back liquid-glass">
+                                <div class="text-sm"><span class="text-blue-400">A:</span> 10%</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <!-- 4-4 -->
                 <div class="glass-card rounded-3xl p-6">
@@ -233,6 +390,17 @@
                         • <span class="highlight-blue text-white">陸域：</span>依雨量分為森林、草原、沙漠(日夜溫差大)。<br>
                         • <span class="highlight-blue text-white">水域：</span>淡水、河口、海洋。
                     </p>
+
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front liquid-glass">
+                                <div class="text-sm"><span class="text-yellow-400">Q:</span> 降雨量最少的生態系？</div>
+                            </div>
+                            <div class="flip-card-back liquid-glass">
+                                <div class="text-sm"><span class="text-blue-400">A:</span> 沙漠</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -248,12 +416,11 @@
 
             <!-- 課本講義圖 168.jpg -->
             <div class="glass-card rounded-[2rem] p-4 sm:p-8 mb-8">
-                <div class="flex justify-between items-center mb-4">
+                <div class="mb-4">
                     <h3 class="text-xl font-black text-purple-400">📌 CH5 重點整理講義</h3>
-                    <a href="168.jpg" target="_blank" class="text-xs bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-full transition shadow-lg">🔍 點擊放大</a>
                 </div>
                 <div class="w-full rounded-2xl overflow-hidden border border-slate-600 bg-white">
-                    <img src="168.jpg" alt="生物多樣性重點整理" class="w-full h-auto object-contain zoom-img" onerror="this.src='https://images.unsplash.com/photo-1582967788606-a171c1080cb0?auto=format&fit=crop&w=1200&q=80'">
+                    <img src="168.jpg" alt="生物多樣性重點整理" class="w-full h-auto object-contain" onerror="this.src='https://images.unsplash.com/photo-1582967788606-a171c1080cb0?auto=format&fit=crop&w=1200&q=80'">
                 </div>
             </div>
 
@@ -266,6 +433,17 @@
                         <li>2. <span class="highlight-purple text-white">物種多樣性：</span>一個地區內生物種類多寡。</li>
                         <li>3. <span class="highlight-purple text-white">生態系多樣性：</span>大區域內環境的豐富度。</li>
                     </ul>
+
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front liquid-glass">
+                                <div><span class="text-yellow-400">Q:</span> 基因不同屬於何種多樣性？</div>
+                            </div>
+                            <div class="flip-card-back liquid-glass">
+                                <div><span class="text-purple-400">A:</span> 遺傳多樣性</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <!-- 5-2 -->
                 <div class="glass-card rounded-3xl p-6 md:p-8 border-t-4 border-t-purple-500">
@@ -275,6 +453,17 @@
                         <li>• <span class="highlight-purple text-white">外來種入侵：</span>缺乏天敵，破壞平衡。</li>
                         <li>• <span class="highlight-purple text-white">生物放大作用：</span>毒物難以排出，沿食物鏈累積，<span class="text-red-400">高級消費者體內濃度最高</span>。</li>
                     </ul>
+
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front liquid-glass">
+                                <div><span class="text-yellow-400">Q:</span> 生物多樣性面臨的最大威脅？</div>
+                            </div>
+                            <div class="flip-card-back liquid-glass">
+                                <div><span class="text-purple-400">A:</span> 棲地破壞</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <!-- 5-3 -->
                 <div class="glass-card rounded-3xl p-6 md:p-8 border-t-4 border-t-purple-500">
@@ -284,6 +473,17 @@
                         <li>🌍 <span class="highlight-purple text-white">華盛頓公約：</span>管制瀕危動植物貿易。</li>
                         <li>♻️ <span class="highlight-purple text-white">5R 環保：</span>減量、拒絕、重複使用、回收、再生。</li>
                     </ul>
+
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front liquid-glass">
+                                <div><span class="text-yellow-400">Q:</span> 保護全球濕地的公約？</div>
+                            </div>
+                            <div class="flip-card-back liquid-glass">
+                                <div><span class="text-purple-400">A:</span> 拉姆薩公約</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
