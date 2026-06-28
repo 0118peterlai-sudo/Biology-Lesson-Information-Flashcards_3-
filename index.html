@@ -1,0 +1,333 @@
+```html
+<!DOCTYPE html>
+<html lang="zh-TW" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>國中生物｜段考液態玻璃資訊圖卡目錄</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- 啟用 Tailwind 的深色模式策略 -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            overflow-x: hidden;
+            transition: background-color 0.5s ease;
+        }
+
+        /* ======= 液態背景動畫 (Liquid Blobs) ======= */
+        .liquid-blob {
+            position: fixed;
+            filter: blur(60px);
+            z-index: -1;
+            opacity: 0.6;
+            animation: morph 10s ease-in-out infinite, float 12s ease-in-out infinite;
+            transition: all 0.8s ease;
+        }
+        
+        @keyframes morph {
+            0%, 100% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
+            34% { border-radius: 70% 30% 50% 50% / 30% 30% 70% 70%; }
+            67% { border-radius: 100% 60% 60% 100% / 100% 100% 60% 60%; }
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-40px) scale(1.05); }
+        }
+
+        .blob-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #6ee7b7; }
+        .blob-2 { bottom: -20%; right: -10%; width: 60vw; height: 60vw; background: #93c5fd; animation-delay: -3s; }
+        .blob-3 { top: 30%; left: 30%; width: 40vw; height: 40vw; background: #d8b4fe; animation-delay: -5s; }
+
+        .dark .blob-1 { background: #064e3b; opacity: 0.8;}
+        .dark .blob-2 { background: #1e3a8a; opacity: 0.8;}
+        .dark .blob-3 { background: #4c1d95; opacity: 0.8;}
+
+        /* ======= 液態玻璃卡片 (Liquid Glass Card) ======= */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .dark .glass-card {
+            background: rgba(30, 41, 59, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 30px 40px -10px rgba(0, 0, 0, 0.15);
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        .dark .glass-card:hover {
+            box-shadow: 0 30px 40px -10px rgba(0, 0, 0, 0.5);
+            background: rgba(30, 41, 59, 0.85);
+        }
+
+        .img-zoom { transition: transform 0.7s ease; }
+        .glass-card:hover .img-zoom { transform: scale(1.08); }
+
+        /* 導航列玻璃效果 */
+        .nav-glass {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .dark .nav-glass {
+            background: rgba(15, 23, 42, 0.8);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-16 bg-slate-50 dark:bg-slate-900 transition-colors duration-500">
+
+    <!-- 液態光塊背景 -->
+    <div class="liquid-blob blob-1"></div>
+    <div class="liquid-blob blob-2"></div>
+    <div class="liquid-blob blob-3"></div>
+
+    <!-- 頂部導航列 -->
+    <nav class="nav-glass sticky top-0 z-50 transition-colors duration-500">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="index.html" class="flex items-center gap-2 font-black text-2xl text-emerald-600 dark:text-emerald-400 transition">
+                <span class="text-3xl">🧬</span> 生物圖卡特訓
+            </a>
+            
+            <div class="flex items-center gap-4">
+                <span class="text-xs font-bold text-white bg-red-500 px-3 py-1 rounded-full shadow-md animate-pulse">段考總複習</span>
+                <!-- 深色模式切換按鈕 -->
+                <button id="theme-toggle" class="p-2 rounded-full bg-white/60 dark:bg-slate-800/60 backdrop-blur shadow-sm border border-slate-200 dark:border-slate-700 transition hover:scale-110">
+                    <span id="theme-icon-light" class="text-xl hidden dark:block">☀️</span>
+                    <span id="theme-icon-dark" class="text-xl block dark:hidden">🌙</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 mt-12">
+        
+        <!-- 首頁標題區 -->
+        <header class="text-center mb-16 relative z-10">
+            <h1 class="text-4xl md:text-5xl font-black text-slate-800 dark:text-white mb-4 transition-colors">段考重點資訊圖卡</h1>
+            <p class="text-slate-600 dark:text-slate-300 font-bold text-lg transition-colors">點擊下方單元，進入專屬【重點資訊圖卡】網頁！</p>
+        </header>
+
+        <!-- ========================================== -->
+        <!-- 第 3 章：動物界 (合併為單一圖卡) -->
+        <!-- ========================================== -->
+        <section class="mb-20 relative z-10">
+            <div class="flex items-center gap-3 mb-8">
+                <span class="bg-emerald-500 text-white px-4 h-10 rounded-2xl flex items-center justify-center font-black text-lg shadow-lg shadow-emerald-500/30">3-5</span>
+                <h2 class="text-3xl font-black text-slate-800 dark:text-white transition-colors">動物界的分類</h2>
+                <div class="h-1 flex-grow bg-slate-300/50 dark:bg-slate-700/50 rounded-full ml-4 hidden sm:block"></div>
+            </div>
+
+            <!-- 改為單一大卡片 (grid-cols-1) -->
+            <div class="grid grid-cols-1 gap-8">
+                
+                <!-- 3-5 動物界總覽 -->
+                <!-- 這裡的 href 已統一指向 chapter3-5.html -->
+                <a href="chapter3-5.html" class="glass-card block rounded-[2rem] overflow-hidden group shadow-lg md:flex md:h-[400px]">
+                    <!-- 圖片區：在電腦版佔一半寬度，手機版維持原本比例 -->
+                    <div class="relative w-full md:w-1/2 h-64 md:h-full overflow-hidden bg-slate-200 dark:bg-slate-800">
+                        <img src="https://images.unsplash.com/photo-1546026423-cc4642628d2b?auto=format&fit=crop&w=800&q=80" alt="動物界" class="absolute inset-0 w-full h-full object-cover object-center img-zoom">
+                        <div class="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-slate-900/80 via-transparent to-transparent"></div>
+                        <span class="absolute bottom-4 left-5 md:bottom-auto md:top-5 md:left-5 text-white font-black text-xl tracking-widest drop-shadow-md">3-5</span>
+                    </div>
+                    <!-- 文字區 -->
+                    <div class="p-6 md:p-10 flex flex-col justify-center w-full md:w-1/2">
+                        <h3 class="text-3xl font-black text-slate-800 dark:text-white mb-4 transition-colors">動物界總覽</h3>
+                        <p class="text-slate-600 dark:text-slate-300 text-base font-bold leading-relaxed mb-4 transition-colors">
+                            從海中的無脊椎動物到陸地上的脊索動物。
+                        </p>
+                        <ul class="text-slate-500 dark:text-slate-400 text-sm font-bold leading-relaxed mb-8 list-disc list-inside">
+                            <li>無脊椎動物：刺絲胞、扁形、軟體、環節、節肢、棘皮。</li>
+                            <li>脊索動物門：魚類、兩生類、爬蟲類、鳥類、哺乳類。</li>
+                        </ul>
+                        <span class="text-emerald-600 dark:text-emerald-400 font-black text-lg flex items-center gap-2 group-hover:gap-4 transition-all mt-auto">
+                            查看資訊圖卡 <span>→</span>
+                        </span>
+                    </div>
+                </a>
+
+            </div>
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- 第 4 章：生物與環境 -->
+        <!-- ========================================== -->
+        <section class="mb-20 relative z-10">
+            <div class="flex items-center gap-3 mb-8">
+                <span class="bg-blue-500 text-white w-10 h-10 rounded-2xl flex items-center justify-center font-black text-xl shadow-lg shadow-blue-500/30">4</span>
+                <h2 class="text-3xl font-black text-slate-800 dark:text-white transition-colors">生物與環境</h2>
+                <div class="h-1 flex-grow bg-slate-300/50 dark:bg-slate-700/50 rounded-full ml-4 hidden sm:block"></div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                
+                <!-- 4-1 -->
+                <a href="chapter4-1.html" class="glass-card block rounded-3xl overflow-hidden group shadow-md">
+                    <div class="relative w-full aspect-video overflow-hidden bg-slate-200 dark:bg-slate-800">
+                        <img src="https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?auto=format&fit=crop&w=600&q=80" alt="草原上的動物族群" class="absolute inset-0 w-full h-full object-cover object-center img-zoom">
+                        <span class="absolute top-3 left-3 bg-white/90 dark:bg-slate-800/90 text-blue-600 dark:text-blue-400 font-black text-xs px-2 py-1 rounded shadow-sm backdrop-blur">4-1</span>
+                    </div>
+                    <div class="p-5">
+                        <h3 class="text-lg font-black text-slate-800 dark:text-white mb-2 transition-colors">族群、群集與演替</h3>
+                        <p class="text-slate-600 dark:text-slate-400 text-xs font-bold leading-relaxed">個體、族群到群集，以及環境負荷量與演替過程。</p>
+                        <span class="text-blue-600 dark:text-blue-400 font-black text-xs mt-3 block group-hover:pl-1 transition-all">查看資訊圖卡 →</span>
+                    </div>
+                </a>
+
+                <!-- 4-2 -->
+                <a href="chapter4-2.html" class="glass-card block rounded-3xl overflow-hidden group shadow-md">
+                    <div class="relative w-full aspect-video overflow-hidden bg-slate-200 dark:bg-slate-800">
+                        <img src="https://images.unsplash.com/photo-1555169062-013468b47731?auto=format&fit=crop&w=600&q=80" alt="蜜蜂採蜜-互利共生" class="absolute inset-0 w-full h-full object-cover object-center img-zoom">
+                        <span class="absolute top-3 left-3 bg-white/90 dark:bg-slate-800/90 text-blue-600 dark:text-blue-400 font-black text-xs px-2 py-1 rounded shadow-sm backdrop-blur">4-2</span>
+                    </div>
+                    <div class="p-5">
+                        <h3 class="text-lg font-black text-slate-800 dark:text-white mb-2 transition-colors">生物間的互動關係</h3>
+                        <p class="text-slate-600 dark:text-slate-400 text-xs font-bold leading-relaxed">競爭、掠食、寄生、片利共生與互利共生。</p>
+                        <span class="text-blue-600 dark:text-blue-400 font-black text-xs mt-3 block group-hover:pl-1 transition-all">查看資訊圖卡 →</span>
+                    </div>
+                </a>
+
+                <!-- 4-3 -->
+                <a href="chapter4-3.html" class="glass-card block rounded-3xl overflow-hidden group shadow-md">
+                    <div class="relative w-full aspect-video overflow-hidden bg-slate-200 dark:bg-slate-800">
+                        <img src="https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=600&q=80" alt="森林生態系能量流動" class="absolute inset-0 w-full h-full object-cover object-center img-zoom">
+                        <span class="absolute top-3 left-3 bg-white/90 dark:bg-slate-800/90 text-blue-600 dark:text-blue-400 font-black text-xs px-2 py-1 rounded shadow-sm backdrop-blur">4-3</span>
+                    </div>
+                    <div class="p-5">
+                        <h3 class="text-lg font-black text-slate-800 dark:text-white mb-2 transition-colors">生態系與能量流動</h3>
+                        <p class="text-slate-600 dark:text-slate-400 text-xs font-bold leading-relaxed">生產者/消費者/分解者，食物網與1/10能量塔定律。</p>
+                        <span class="text-blue-600 dark:text-blue-400 font-black text-xs mt-3 block group-hover:pl-1 transition-all">查看資訊圖卡 →</span>
+                    </div>
+                </a>
+
+                <!-- 4-4 -->
+                <a href="chapter4-4.html" class="glass-card block rounded-3xl overflow-hidden group shadow-md">
+                    <div class="relative w-full aspect-video overflow-hidden bg-slate-200 dark:bg-slate-800">
+                        <img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=600&q=80" alt="不同地貌與生態系" class="absolute inset-0 w-full h-full object-cover object-center img-zoom">
+                        <span class="absolute top-3 left-3 bg-white/90 dark:bg-slate-800/90 text-blue-600 dark:text-blue-400 font-black text-xs px-2 py-1 rounded shadow-sm backdrop-blur">4-4</span>
+                    </div>
+                    <div class="p-5">
+                        <h3 class="text-lg font-black text-slate-800 dark:text-white mb-2 transition-colors">生態系的類型</h3>
+                        <p class="text-slate-600 dark:text-slate-400 text-xs font-bold leading-relaxed">陸域(凍原/草原/沙漠/森林)與水域(淡水/海洋)。</p>
+                        <span class="text-blue-600 dark:text-blue-400 font-black text-xs mt-3 block group-hover:pl-1 transition-all">查看資訊圖卡 →</span>
+                    </div>
+                </a>
+
+            </div>
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- 第 5 章：生物多樣性 -->
+        <!-- ========================================== -->
+        <section class="mb-20 relative z-10">
+            <div class="flex items-center gap-3 mb-8">
+                <span class="bg-purple-500 text-white w-10 h-10 rounded-2xl flex items-center justify-center font-black text-xl shadow-lg shadow-purple-500/30">5</span>
+                <h2 class="text-3xl font-black text-slate-800 dark:text-white transition-colors">生物多樣性與保育</h2>
+                <div class="h-1 flex-grow bg-slate-300/50 dark:bg-slate-700/50 rounded-full ml-4 hidden sm:block"></div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-8">
+                
+                <!-- 5-1 -->
+                <a href="chapter5-1.html" class="glass-card block rounded-3xl overflow-hidden group shadow-md">
+                    <div class="relative w-full aspect-video overflow-hidden bg-slate-200 dark:bg-slate-800">
+                        <img src="https://images.unsplash.com/photo-1582967788606-a171c1080cb0?auto=format&fit=crop&w=600&q=80" alt="豐富物種的珊瑚礁" class="absolute inset-0 w-full h-full object-cover object-center img-zoom">
+                        <span class="absolute top-3 left-3 bg-white/90 dark:bg-slate-800/90 text-purple-600 dark:text-purple-400 font-black text-xs px-2 py-1 rounded shadow-sm backdrop-blur">5-1</span>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-black text-slate-800 dark:text-white mb-2 transition-colors">生物多樣性</h3>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm font-bold leading-relaxed">
+                            包含遺傳多樣性、物種多樣性、以及生態系多樣性三個層次。
+                        </p>
+                        <span class="text-purple-600 dark:text-purple-400 font-black text-xs mt-4 block group-hover:pl-1 transition-all">查看資訊圖卡 →</span>
+                    </div>
+                </a>
+
+                <!-- 5-2 -->
+                <a href="chapter5-2.html" class="glass-card block rounded-3xl overflow-hidden group shadow-md">
+                    <div class="relative w-full aspect-video overflow-hidden bg-slate-200 dark:bg-slate-800">
+                        <img src="https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?auto=format&fit=crop&w=600&q=80" alt="環境汙染塑膠垃圾" class="absolute inset-0 w-full h-full object-cover object-center img-zoom">
+                        <span class="absolute top-3 left-3 bg-white/90 dark:bg-slate-800/90 text-purple-600 dark:text-purple-400 font-black text-xs px-2 py-1 rounded shadow-sm backdrop-blur">5-2</span>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-black text-slate-800 dark:text-white mb-2 transition-colors">面臨的危機</h3>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm font-bold leading-relaxed">
+                            棲地破壞、外來種入侵、環境汙染，以及危險的「生物放大作用」。
+                        </p>
+                        <span class="text-purple-600 dark:text-purple-400 font-black text-xs mt-4 block group-hover:pl-1 transition-all">查看資訊圖卡 →</span>
+                    </div>
+                </a>
+
+                <!-- 5-3 -->
+                <a href="chapter5-3.html" class="glass-card block rounded-3xl overflow-hidden group shadow-md">
+                    <div class="relative w-full aspect-video overflow-hidden bg-slate-200 dark:bg-slate-800">
+                        <img src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=600&q=80" alt="保護植物幼苗" class="absolute inset-0 w-full h-full object-cover object-center img-zoom">
+                        <span class="absolute top-3 left-3 bg-white/90 dark:bg-slate-800/90 text-purple-600 dark:text-purple-400 font-black text-xs px-2 py-1 rounded shadow-sm backdrop-blur">5-3</span>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-black text-slate-800 dark:text-white mb-2 transition-colors">保育的落實</h3>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm font-bold leading-relaxed">
+                            認識國際公約(如拉姆薩公約)、國家公園，與落實 5R 環保作為。
+                        </p>
+                        <span class="text-purple-600 dark:text-purple-400 font-black text-xs mt-4 block group-hover:pl-1 transition-all">查看資訊圖卡 →</span>
+                    </div>
+                </a>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 頁腳 -->
+    <footer class="nav-glass mt-12 py-8 relative z-10">
+        <div class="max-w-5xl mx-auto px-4 text-center">
+            <p class="text-slate-500 dark:text-slate-400 font-bold text-sm">© 段考專屬國中生物目錄．準備放上 GitHub Pages 🚀</p>
+        </div>
+    </footer>
+
+    <!-- 深色模式切換邏輯 -->
+    <script>
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const htmlElement = document.documentElement;
+        
+        // 檢查系統或上次儲存的深色模式設定
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            htmlElement.classList.add('dark');
+        } else {
+            htmlElement.classList.remove('dark');
+        }
+
+        // 點擊切換模式
+        themeToggleBtn.addEventListener('click', () => {
+            htmlElement.classList.toggle('dark');
+            
+            if (htmlElement.classList.contains('dark')) {
+                localStorage.setItem('theme', 'dark');
+            } else {
+                localStorage.setItem('theme', 'light');
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+```
